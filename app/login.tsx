@@ -1,23 +1,31 @@
 import React, { useState } from "react";
-import { View, Text, ActivityIndicator, Alert, StatusBar } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+  View,
+  Text,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import {
   GoogleSignin,
-  statusCodes,
   GoogleSigninButton,
+  statusCodes,
 } from "@react-native-google-signin/google-signin";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
 import { apiClient } from "@/src/api/apiClient";
-import { MapPin, Compass, Users, Bell } from "lucide-react-native";
-
-const WEB_CLIENT_ID = process.env.EXPO_PUBLIC_WEB_CLIENT_ID;
+import {
+  ShieldCheck,
+  X,
+  HardDrive,
+  Share2,
+  BarChart3,
+  CheckCircle2,
+} from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 GoogleSignin.configure({
-  webClientId: WEB_CLIENT_ID,
+  webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
   offlineAccess: true,
   scopes: ["profile", "email"],
 });
@@ -26,24 +34,22 @@ export default function LoginScreen() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
-
       const idToken = response.data?.idToken;
       if (!idToken) throw new Error("No ID Token received from Google");
 
       const data = await apiClient.post("/auth/google/token", { idToken });
-
       await login(data.data.accessToken, data.data.user);
-      router.replace("/");
+      router.replace("/(tabs)");
     } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("User cancelled");
-      } else {
+      if (error.code !== statusCodes.SIGN_IN_CANCELLED) {
         Alert.alert("Error", error?.message ?? "Something went wrong");
       }
     } finally {
@@ -51,63 +57,76 @@ export default function LoginScreen() {
     }
   };
 
-  const features = [
-    { icon: Compass, label: "Explore nearby" },
-    { icon: Users, label: "Meet locals" },
-    { icon: Bell, label: "Get notified" },
+  const perks = [
+    { icon: HardDrive, text: "Save directly to your Google Drive" },
+    { icon: Share2, text: "Create unique shareable event IDs" },
+    { icon: BarChart3, text: "Manage and moderate all uploads" },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
-      <View className="absolute top-0 right-0 w-64 h-64 rounded-full bg-indigo-100 -translate-y-16 translate-x-16" />
-      <View className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-indigo-50 translate-y-10 -translate-x-10" />
+    <View
+      className="bg-slate-50 flex-1 px-8"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
+      {/* Decorative Background Elements */}
+      <View className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full" />
+      <View className="absolute top-1/2 -left-20 w-40 h-40 bg-indigo-500/5 rounded-full" />
 
-      <View className="flex-1 justify-center px-6 gap-y-8">
-        <View className="items-center gap-y-4">
-          <View className="w-20 h-20 rounded-full border border-indigo-100 bg-white items-center justify-center">
-            <View className="w-14 h-14 rounded-full bg-indigo-50 items-center justify-center">
-              <MapPin size={32} color="#6366f1" />
-            </View>
+      {/* Close Button */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        className="absolute left-8 w-10 h-10 bg-white border border-slate-200 rounded-full items-center justify-center z-10"
+        style={{ top: insets.top + 10 }}
+      >
+        <X size={20} color="#64748b" />
+      </TouchableOpacity>
+
+      <View className="flex-1 justify-center">
+        {/* Header Section */}
+        <View className="items-center mb-12">
+          <View className="w-24 h-24 rounded-[32px] bg-primary items-center justify-center mb-6 shadow-xl shadow-indigo-500/40">
+            <ShieldCheck size={48} color="white" strokeWidth={1.5} />
           </View>
-          <Text className="text-slate-900 text-4xl font-bold tracking-tight">
-            EventDrop
+          <Text className="text-slate-900 text-4xl font-bold tracking-tight mb-2">
+            Host Access
           </Text>
-          <Text className="text-slate-400 text-base text-center leading-6">
-            Discover events happening{"\n"}right around you
+          <Text className="text-slate-500 text-base text-center leading-6 px-6">
+            Become a host to start collecting high-quality photos from your
+            guests.
           </Text>
         </View>
 
-        {/* features */}
-        <View className="flex-row gap-x-3">
-          {features.map(({ icon: Icon, label }) => (
+        {/* Feature List (The "Content" that fills the space) */}
+        <View className="bg-white border border-slate-100 rounded-3xl p-6 mb-10 shadow-sm">
+          <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-[2px] mb-4">
+            Host Privileges
+          </Text>
+          {perks.map((perk, index) => (
             <View
-              key={label}
-              className="flex-1 items-center gap-y-2 bg-white rounded-2xl py-4 border border-slate-100"
+              key={index}
+              className={`flex-row items-center py-3 ${index !== perks.length - 1 ? "border-b border-slate-50" : ""}`}
             >
-              <View className="w-10 h-10 rounded-full bg-indigo-50 items-center justify-center">
-                <Icon size={18} color="#6366f1" />
+              <View className="w-8 h-8 rounded-full bg-indigo-50 items-center justify-center mr-4">
+                <perk.icon size={16} color="#6366f1" />
               </View>
-              <Text className="text-slate-500 text-xs text-center">
-                {label}
+              <Text className="text-slate-700 font-medium flex-1">
+                {perk.text}
               </Text>
+              <CheckCircle2 size={16} color="#10b981" />
             </View>
           ))}
         </View>
 
-        {/* card */}
-        <View className="bg-white rounded-3xl p-6 border border-slate-100 gap-y-4">
-          <Text className="text-slate-900 text-xl font-semibold">Welcome</Text>
-          <Text className="text-slate-400 text-sm leading-5">
-            Sign in to start discovering events near you
-          </Text>
-
+        {/* Action Section */}
+        <View className="items-center">
           {isLoading ? (
-            <View className="items-center py-3">
-              <ActivityIndicator color="#6366f1" />
+            <View className="h-[58px] justify-center">
+              <ActivityIndicator size="large" color="#6366f1" />
             </View>
           ) : (
-            <View className="items-center">
+            <View className="w-full shadow-md shadow-black/5">
               <GoogleSigninButton
+                style={{ width: "100%", height: 58 }}
                 size={GoogleSigninButton.Size.Wide}
                 color={GoogleSigninButton.Color.Light}
                 onPress={handleGoogleSignIn}
@@ -115,14 +134,16 @@ export default function LoginScreen() {
               />
             </View>
           )}
-
-          <Text className="text-slate-400 text-xs text-center leading-5">
-            By continuing you agree to our{" "}
-            <Text className="text-indigo-500">Terms</Text> &{" "}
-            <Text className="text-indigo-500">Privacy Policy</Text>
+          <Text className="text-slate-400 text-[11px] text-center mt-6 leading-4">
+            By signing in, you agree to our{"\n"}
+            <Text className="text-primary font-semibold">
+              Terms of Service
+            </Text>{" "}
+            and{" "}
+            <Text className="text-primary font-semibold">Privacy Policy</Text>
           </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

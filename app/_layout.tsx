@@ -48,8 +48,8 @@ export default function RootLayout() {
     <QueryProvider>
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
           <Stack.Screen name="onBoarding" />
+          <Stack.Screen name="index" />
           <Stack.Screen
             name="login"
             options={{
