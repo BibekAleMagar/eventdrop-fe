@@ -1,19 +1,26 @@
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
+import { QueryProvider } from "@/src/context/QueryClient";
+import { AuthProvider } from "@/src/context/AuthContext";
 
 export default function RootLayout() {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
   const router = useRouter();
-  const segments = useSegments();
 
   useEffect(() => {
     const checkFirstLaunch = async () => {
       try {
+        if (__DEV__) {
+          await AsyncStorage.clear();
+          setIsFirstLaunch(true);
+          return;
+        }
+
         const hasLaunched = await AsyncStorage.getItem("hasLaunched");
         if (hasLaunched === null) {
-          // It's the first time
+          await AsyncStorage.setItem("hasLaunched", "true");
           setIsFirstLaunch(true);
         } else {
           setIsFirstLaunch(false);
@@ -28,25 +35,30 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (isFirstLaunch === null) return;
-
-    // If it's the first launch, redirect to onboarding
-    // We check segments to ensure we don't loop the redirect
-    const inOnboarding = segments[0] === "onBoarding";
-
-    if (isFirstLaunch && !inOnboarding) {
+    if (isFirstLaunch) {
       router.replace("/onBoarding");
-    } else if (!isFirstLaunch && inOnboarding) {
+    } else {
       router.replace("/");
     }
-  }, [isFirstLaunch, segments]);
+  }, [isFirstLaunch]);
 
-  // Prevent rendering until we know the launch status
   if (isFirstLaunch === null) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="onBoarding" />
-    </Stack>
+    <QueryProvider>
+      <AuthProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="onBoarding" />
+          <Stack.Screen
+            name="login"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+            }}
+          />
+        </Stack>
+      </AuthProvider>
+    </QueryProvider>
   );
 }

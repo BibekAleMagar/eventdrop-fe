@@ -6,94 +6,156 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
-import { PlusCircle, Users, LayoutGrid, Settings } from "lucide-react-native";
+import {
+  PlusCircle,
+  Users,
+  LayoutGrid,
+  Settings,
+  MapPin,
+  ChevronRight,
+  Bell,
+} from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/src/context/AuthContext";
+import HowItWorksModal from "@/src/components/home/HowItWorksModal";
 
 export default function Index() {
+  const [howItWorksVisible, setHowItWorksVisible] = React.useState(false);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { user } = useAuth();
 
   return (
-    <ScrollView className="flex-1 px-6" style={{ paddingTop: insets.top }}>
-      {/* Header Section */}
-      <View
-        style={{ marginTop: 20 }}
-        className="flex-row justify-between items-center mb-8"
-      >
-        <View>
-          <Text className="text-slate-400 text-sm font-medium uppercase tracking-widest">
-            Welcome to
-          </Text>
-          <Text className="text-3xl font-black text-slate-900">
-            EventDrop<Text className="text-indigo-600">.</Text>
-          </Text>
+    <ScrollView
+      className="flex-1 bg-slate-50"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="px-6 pb-10">
+        {/* Header */}
+        <View className="flex-row justify-between items-center mt-6 mb-8">
+          <View>
+            <Text className="text-slate-400 text-xs font-medium uppercase tracking-widest mb-1">
+              Good morning
+            </Text>
+            <Text className="text-slate-900 text-2xl font-bold tracking-tight">
+              {user?.username ?? "Guest"} 👋
+            </Text>
+          </View>
+          <View className="flex-row gap-x-2">
+            <TouchableOpacity className="w-10 h-10 bg-white rounded-xl border border-slate-100 items-center justify-center">
+              <Bell size={18} color="#94a3b8" />
+            </TouchableOpacity>
+            <TouchableOpacity className="w-10 h-10 bg-white rounded-xl border border-slate-100 items-center justify-center">
+              <Settings size={18} color="#94a3b8" />
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-          <Settings size={24} color="#64748b" />
-        </TouchableOpacity>
-      </View>
+        {/* Hero Card */}
+        <View className="bg-indigo-500 rounded-3xl p-6 mb-6 overflow-hidden">
+          <View className="absolute -top-6 -right-6 w-32 h-32 bg-indigo-400 rounded-full opacity-40" />
+          <View className="absolute -bottom-8 -left-4 w-24 h-24 bg-indigo-600 rounded-full opacity-40" />
 
-      {/* Hero Card / Status */}
-      <View className="bg-indigo-600 rounded-[32px] p-8 mb-8 shadow-xl shadow-indigo-200 overflow-hidden relative">
-        <View className="z-10">
-          <Text className="text-indigo-100 text-lg font-medium">
-            Ready to share?
+          <View className="flex-row items-center gap-x-2 mb-3">
+            <View className="bg-white/20 px-3 py-1 rounded-full">
+              <Text className="text-white text-xs font-semibold">Live now</Text>
+            </View>
+          </View>
+
+          <Text className="text-white text-xl font-bold mb-1">
+            No active event
           </Text>
-          <Text className="text-white text-2xl font-bold mt-1">
-            No active event found
+          <Text className="text-indigo-100 text-sm leading-5 mb-5">
+            Create or join an event to get{"\n"}started with EventDrop.
           </Text>
-          <TouchableOpacity className="bg-white/20 self-start mt-4 px-4 py-2 rounded-full border border-white/30">
-            <Text className="text-white font-semibold">How it works</Text>
+
+          <TouchableOpacity
+            className="bg-white self-start flex-row items-center gap-x-2 px-4 py-2.5 rounded-xl"
+            onPress={() => setHowItWorksVisible(true)}
+          >
+            <MapPin size={14} color="#6366f1" />
+            <Text className="text-indigo-600 text-sm font-semibold">
+              How it works
+            </Text>
+          </TouchableOpacity>
+
+          <HowItWorksModal
+            visible={howItWorksVisible}
+            onClose={() => setHowItWorksVisible(false)}
+          />
+        </View>
+        {/* Quick Actions */}
+        <Text className="text-slate-900 text-base font-semibold mb-3 px-1">
+          Quick actions
+        </Text>
+        setHowItWorksVisible
+        <View className="flex-row gap-x-3 mb-8">
+          {/* Join Event */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-1 bg-white rounded-2xl p-5 border border-slate-100 items-start"
+          >
+            <View className="w-10 h-10 bg-blue-50 rounded-xl items-center justify-center mb-4">
+              <Users size={20} color="#3b82f6" strokeWidth={2} />
+            </View>
+            <Text className="text-slate-900 font-semibold text-base">Join</Text>
+            <Text className="text-slate-400 text-xs mt-0.5">6-digit code</Text>
+          </TouchableOpacity>
+
+          {/* Create Event */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-1 bg-white rounded-2xl p-5 border border-slate-100 items-start"
+            onPress={() => router.push("/login")}
+          >
+            <View className="w-10 h-10 bg-indigo-50 rounded-xl items-center justify-center mb-4">
+              <PlusCircle size={20} color="#6366f1" strokeWidth={2} />
+            </View>
+            <Text className="text-slate-900 font-semibold text-base">
+              Create
+            </Text>
+            <Text className="text-slate-400 text-xs mt-0.5">New event</Text>
+          </TouchableOpacity>
+
+          {/* Browse */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-1 bg-white rounded-2xl p-5 border border-slate-100 items-start"
+          >
+            <View className="w-10 h-10 bg-emerald-50 rounded-xl items-center justify-center mb-4">
+              <LayoutGrid size={20} color="#10b981" strokeWidth={2} />
+            </View>
+            <Text className="text-slate-900 font-semibold text-base">
+              Browse
+            </Text>
+            <Text className="text-slate-400 text-xs mt-0.5">Explore all</Text>
           </TouchableOpacity>
         </View>
-        {/* Decorative background circle */}
-        <View className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
-      </View>
-
-      {/* Main Actions Container */}
-      <View className="flex-row gap-4 mb-8">
-        {/* Join Room Card */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-1 bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm items-center"
-        >
-          <View className="bg-blue-50 p-4 rounded-2xl mb-4">
-            <Users size={32} color="#3b82f6" strokeWidth={2.5} />
-          </View>
-          <Text className="text-slate-900 font-bold text-lg">Join Event</Text>
-          <Text className="text-slate-400 text-xs text-center mt-1">
-            Enter a 6-digit code
+        {/* Recent Events */}
+        <View className="flex-row justify-between items-center mb-4 px-1">
+          <Text className="text-slate-900 text-base font-semibold">
+            Recent events
           </Text>
-        </TouchableOpacity>
-
-        {/* Create Room Card */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-1 bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm items-center"
-        >
-          <View className="bg-indigo-50 p-4 rounded-2xl mb-4">
-            <PlusCircle size={32} color="#6366f1" strokeWidth={2.5} />
+          <TouchableOpacity className="flex-row items-center gap-x-1">
+            <Text className="text-indigo-500 text-sm font-medium">
+              View all
+            </Text>
+            <ChevronRight size={14} color="#6366f1" />
+          </TouchableOpacity>
+        </View>
+        {/* Empty State */}
+        <View className="bg-white rounded-2xl border border-dashed border-slate-200 py-12 items-center justify-center">
+          <View className="w-14 h-14 bg-slate-50 rounded-2xl border border-slate-100 items-center justify-center mb-4">
+            <LayoutGrid size={24} color="#cbd5e1" strokeWidth={1.5} />
           </View>
-          <Text className="text-slate-900 font-bold text-lg">Create</Text>
-          <Text className="text-slate-400 text-xs text-center mt-1">
-            Launch new session
+          <Text className="text-slate-700 font-semibold text-base mb-1">
+            No events yet
           </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Recent Events / History Section */}
-      <View className="flex-row justify-between items-center mb-4 px-2">
-        <Text className="text-slate-900 font-bold text-xl">Recent Events</Text>
-        <TouchableOpacity>
-          <Text className="text-indigo-600 font-semibold">View All</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Placeholder for History */}
-      <View className="bg-white rounded-[24px] p-6 border border-slate-100 border-dashed items-center justify-center">
-        <LayoutGrid size={40} color="#cbd5e1" strokeWidth={1.5} />
-        <Text className="text-slate-400 mt-3 font-medium">
-          Your recent event history will appear here.
-        </Text>
+          <Text className="text-slate-400 text-sm text-center leading-5">
+            Events you create or join{"\n"}will appear here.
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
