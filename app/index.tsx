@@ -43,8 +43,8 @@ export default function Index() {
       <View className="w-full gap-y-4 mb-10">
         <TextInput
           placeholder="Enter Event Code"
-          placeholderTextColor={"black"}
-          className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-slate-800"
+          placeholderTextColor={"#6366f1"}
+          className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-primary"
           autoCapitalize="characters"
         />
 

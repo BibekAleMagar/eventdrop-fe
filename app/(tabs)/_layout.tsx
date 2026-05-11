@@ -66,6 +66,12 @@ export default function DashboardLayout() {
           tabBarLabel: "Settings",
         }}
       />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -1,3 +1,5 @@
+import {z} from "zod";
+import { CreateEventSchema } from "../validation/event";
 
 
 export type Event = {
@@ -12,9 +14,4 @@ export type Event = {
     updatedAt: string;
 }
 
-export type CreateEvent = {
-    title: string;
-    description?: string;
-    startingDate: string;
-    endingDate?: string;
-}
+export type CreateEvent = z.infer<typeof CreateEventSchema>;

@@ -113,7 +113,7 @@ export default function Dashboard() {
         <TouchableOpacity
           className="w-full h-48 border-2 border-dashed border-slate-800 rounded-[32px] items-center justify-center mt-2"
           activeOpacity={0.7}
-          onPress={() => router.push("/create-event")}
+          onPress={() => router.push("../create-event")}
         >
           <View className="w-14 h-14 rounded-full border-2 border-dashed border-slate-800  items-center justify-center mb-4">
             <Plus size={30} color="#64748b" />
