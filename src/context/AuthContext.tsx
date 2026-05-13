@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const loadAuthState = async () => {
       try {
         const [storedToken, storedUser] = await AsyncStorage.multiGet([
-          "auth_token",
+          "access_token",
           "auth_user",
         ]);
 
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = useCallback(async (token: string, user: User) => {
     try {
       await AsyncStorage.multiSet([
-        ["auth_token", token],
+        ["access_token", token],
         ["auth_user", JSON.stringify(user)],
       ]);
 
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
-      await AsyncStorage.multiRemove(["auth_token", "auth_user"]);
+      await AsyncStorage.multiRemove(["access_token", "auth_user"]);
     } catch (error) {
       console.error("Failed to clear auth state:", error);
     } finally {

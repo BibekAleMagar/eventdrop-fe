@@ -1,5 +1,5 @@
 import {z} from "zod";
-import { CreateEventSchema } from "../validation/event";
+import { createEventSchema } from "../validation/event";
 
 
 export type Event = {
@@ -14,4 +14,6 @@ export type Event = {
     updatedAt: string;
 }
 
-export type CreateEvent = z.infer<typeof CreateEventSchema>;
+export type CreateEvent = z.infer<typeof createEventSchema>;
+export type CreateEventInput = z.input<typeof createEventSchema>;   // what the form holds
+export type CreateEventOutput = z.output<typeof createEventSchema>;
