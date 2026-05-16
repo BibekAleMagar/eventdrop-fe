@@ -1,132 +1,204 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+} from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Plus,
   Sparkles,
   ArrowUpRight,
-  Image as ImageIcon,
+  QrCode,
+  FolderOpen,
+  CalendarDays,
 } from "lucide-react-native";
 import { router } from "expo-router";
+import { useMyEvents } from "@/src/hooks/Event";
+import { Event } from "@/src/types/Event";
+
+const CARD_ACCENTS = [
+  {
+    badge: "bg-emerald-50",
+    badgeBorder: "border-emerald-100",
+    badgeText: "text-emerald-600",
+    icon: "#10b981",
+    dot: "bg-emerald-100",
+    btn: "bg-slate-900",
+  },
+  {
+    badge: "bg-amber-50",
+    badgeBorder: "border-amber-100",
+    badgeText: "text-amber-600",
+    icon: "#f59e0b",
+    dot: "bg-amber-100",
+    btn: "bg-orange-600",
+  },
+  {
+    badge: "bg-blue-50",
+    badgeBorder: "border-blue-100",
+    badgeText: "text-blue-500",
+    icon: "#3b82f6",
+    dot: "bg-blue-100",
+    btn: "bg-slate-900",
+  },
+];
 
 export default function Dashboard() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const { data, isLoading, error } = useMyEvents();
+
+  // Safely handle the response array
+  const events: Event[] = data ?? [];
 
   return (
     <ScrollView
-      className="flex-1 bg-surface" // Using our new Bone/Parchment color
+      className="flex-1 bg-[#F8FAFC]"
       contentContainerStyle={{
         paddingTop: insets.top + 20,
         paddingBottom: insets.bottom + 40,
       }}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── Minimalist Header ── */}
+      {/* ── Header ── */}
       <View className="px-8 mb-10 flex-row justify-between items-center">
         <View>
-          <Text className="text-midnight text-3xl font-light tracking-tight">
+          <Text className="text-slate-900 text-3xl font-light tracking-tight">
             Hello,{" "}
             <Text className="font-semibold">{user?.username || "Host"}</Text>
           </Text>
-          <Text className="text-clay font-medium text-[10px] tracking-[3px] uppercase mt-1">
+          <Text className="text-slate-400 font-medium text-[10px] tracking-[3px] uppercase mt-1">
             Your Event Collection
           </Text>
         </View>
-        <View className="w-12 h-12 rounded-full bg-white border border-sand/30 shadow-sm items-center justify-center">
-          <Sparkles size={20} color="#B08968" />
+        <View className="w-12 h-12 rounded-full bg-white border border-slate-100 shadow-sm items-center justify-center">
+          <Image
+            source={{
+              uri:
+                user?.photoUrl ||
+                "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+            }}
+            className="w-10 h-10 rounded-full"
+          />
         </View>
       </View>
 
-      {/* ── Event Cards with Curated Colors ── */}
-      <View className="px-6 gap-y-8">
-        {/* Card 1: Sage & Cream (Professional/Organic) */}
-        <TouchableOpacity activeOpacity={0.9} className="relative">
-          <View className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm">
-            <View className="flex-row justify-between items-start mb-10">
-              <View className="bg-accent-sage/10 px-4 py-1.5 rounded-full border border-accent-sage/20">
-                <Text className="text-accent-sage text-[10px] font-bold tracking-widest uppercase">
-                  Garden Party
-                </Text>
-              </View>
-              <ArrowUpRight size={20} color="#86A789" />
-            </View>
-
-            <Text className="text-midnight text-2xl font-medium mb-1">
-              Summer Solstice
-            </Text>
-            <Text className="text-slate-400 text-sm mb-6">
-              July 12 • 58 Moments
-            </Text>
-
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center -space-x-3">
-                {[1, 2, 3].map((i) => (
-                  <View
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-accent-sage/20 border-2 border-white"
-                  />
-                ))}
-              </View>
-              <View className="bg-midnight h-12 w-12 rounded-2xl items-center justify-center">
-                <ImageIcon size={20} color="white" />
-              </View>
-            </View>
+      {/* ── Event Cards ── */}
+      <View className="px-6 gap-y-6">
+        {isLoading && (
+          <View className="items-center py-20">
+            <ActivityIndicator size="large" color="#f59e0b" />
           </View>
-        </TouchableOpacity>
+        )}
 
-        {/* Card 2: Clay & Sand (Warm/Premium) */}
-        <TouchableOpacity activeOpacity={0.9}>
-          <View className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm">
-            <View className="flex-row justify-between items-start mb-10">
-              <View className="bg-accent-clay/10 px-4 py-1.5 rounded-full border border-accent-clay/20">
-                <Text className="text-accent-clay text-[10px] font-bold tracking-widest uppercase">
-                  Wedding
-                </Text>
-              </View>
-              <ArrowUpRight size={20} color="#B08968" />
-            </View>
-
-            <Text className="text-midnight text-2xl font-medium mb-1">
-              The Sullivan Wedding
+        {error && (
+          <View className="bg-red-50 rounded-[32px] p-8 border border-red-100 items-center">
+            <Text className="text-red-500 text-sm font-medium">
+              Failed to load events
             </Text>
-            <Text className="text-slate-400 text-sm mb-6">
-              June 15 • 142 Moments
-            </Text>
-
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center -space-x-3">
-                {[1, 2, 3].map((i) => (
-                  <View
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-accent-sand/30 border-2 border-white"
-                  />
-                ))}
-              </View>
-              <View className="bg-primary h-12 w-12 rounded-2xl items-center justify-center">
-                <Plus size={20} color="white" />
-              </View>
-            </View>
           </View>
-        </TouchableOpacity>
+        )}
+
+        {!isLoading && events.length === 0 && (
+          <View className="bg-white rounded-[32px] p-10 border border-slate-100 items-center">
+            <CalendarDays size={40} color="#CBD5E1" />
+            <Text className="text-slate-400 text-sm mt-4 text-center">
+              No events found. Start by creating one.
+            </Text>
+          </View>
+        )}
+
+        {!isLoading &&
+          events.map((event, index) => {
+            const accent = CARD_ACCENTS[index % CARD_ACCENTS.length];
+            return (
+              <TouchableOpacity
+                key={event.id}
+                activeOpacity={0.9}
+                onPress={() => router.push(`../event/${event.eventCode}`)}
+              >
+                <View className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm">
+                  {/* Badge & Icon */}
+                  <View className="flex-row justify-between items-start mb-8">
+                    <View
+                      className={`${accent.badge} px-4 py-1.5 rounded-full border ${accent.badgeBorder}`}
+                    >
+                      <Text
+                        className={`${accent.badgeText} text-[10px] font-bold tracking-widest uppercase`}
+                      >
+                        {event.eventCode}
+                      </Text>
+                    </View>
+                    <ArrowUpRight size={20} color={accent.icon} />
+                  </View>
+
+                  {/* Content */}
+                  <Text className="text-slate-900 text-2xl font-semibold mb-1">
+                    {event.name}
+                  </Text>
+                  <Text
+                    className="text-slate-400 text-sm mb-6"
+                    numberOfLines={2}
+                  >
+                    {event.description}
+                  </Text>
+
+                  {/* Action Row */}
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center -space-x-3">
+                      {[1, 2, 3].map((i) => (
+                        <View
+                          key={i}
+                          className={`w-10 h-10 rounded-full ${accent.dot} border-2 border-white`}
+                        />
+                      ))}
+                    </View>
+
+                    <TouchableOpacity
+                      className={`${accent.btn} h-12 w-12 rounded-2xl items-center justify-center shadow-lg`}
+                      onPress={() =>
+                        router.push({
+                          pathname: "../event/qr",
+                          params: { url: event.qrCodeUrl, name: event.name },
+                        })
+                      }
+                    >
+                      <QrCode size={20} color="white" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Google Drive Footer */}
+                  {event.driveFolderUrl && (
+                    <TouchableOpacity
+                      className="mt-6 pt-4 border-t border-slate-50 flex-row items-center gap-x-2"
+                      onPress={() => router.push(event.driveFolderUrl as any)}
+                    >
+                      <FolderOpen size={16} color="#94A3B8" />
+                      <Text className="text-slate-400 text-xs font-medium">
+                        View in Google Drive
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+        {/* ── Create Button ── */}
         <TouchableOpacity
-          className="w-full h-48 border-2 border-dashed border-slate-800 rounded-[32px] items-center justify-center mt-2"
-          activeOpacity={0.7}
+          className="w-full py-12 border-2 border-dashed border-slate-200 rounded-[32px] items-center justify-center mt-4"
           onPress={() => router.push("../create-event")}
         >
-          <View className="w-14 h-14 rounded-full border-2 border-dashed border-slate-800  items-center justify-center mb-4">
-            <Plus size={30} color="#64748b" />
+          <View className="bg-slate-100 p-4 rounded-full mb-3">
+            <Plus size={24} color="#64748b" />
           </View>
-          <Text className="text-slate-400 font-semibold">Create New Event</Text>
+          <Text className="text-slate-500 font-medium">Add New Event</Text>
         </TouchableOpacity>
-      </View>
-
-      <View className="mt-6 px-10">
-        <Text className="text-center text-slate-400 text-xs leading-5">
-          Events are synced directly to your Google Drive.{"\n"}
-          <Text className="text-clay font-semibold">Manage Permissions</Text>
-        </Text>
       </View>
     </ScrollView>
   );

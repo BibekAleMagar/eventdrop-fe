@@ -26,8 +26,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+  forceCodeForRefreshToken: true,
   offlineAccess: true,
-  scopes: ["profile", "email"],
+  scopes: ["profile", "email", "https://www.googleapis.com/auth/drive.file"],
 });
 
 export default function LoginScreen() {
@@ -39,14 +40,34 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      const idToken = response.data?.idToken;
-      if (!idToken) throw new Error("No ID Token received from Google");
+      // 💡 1. Force clear everything cached by the Google SDK on the phone
+      try {
+        await GoogleSignin.revokeAccess(); // 👈 This forces Google to forget this device's session
+        await GoogleSignin.signOut();
+      } catch (e) {
+        // Ignore errors if the user wasn't signed in yet
+      }
 
-      const data = await apiClient.post("/auth/google/token", { idToken });
-      await login(data.data.accessToken, data.data.user);
+      await GoogleSignin.hasPlayServices();
+
+      // 💡 2. Trigger the fresh sign-in prompt
+      const response = await GoogleSignin.signIn();
+
+      const idToken = response.data?.idToken;
+      const serverAuthCode = response.data?.serverAuthCode;
+
+      if (!idToken || !serverAuthCode) {
+        throw new Error("Missing structural tokens from Google");
+      }
+
+      // 💡 3. Post to backend
+      const res = await apiClient.post("/auth/google/token", {
+        idToken,
+        serverAuthCode,
+      });
+      console.log("Received from backend:", res);
+
+      await login(res.data.accessToken, res.data.user);
       router.replace("/(tabs)");
     } catch (error: any) {
       if (error.code !== statusCodes.SIGN_IN_CANCELLED) {
