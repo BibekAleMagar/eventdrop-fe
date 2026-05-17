@@ -65,7 +65,6 @@ export default function LoginScreen() {
         idToken,
         serverAuthCode,
       });
-      console.log("Received from backend:", res);
 
       await login(res.data.accessToken, res.data.user);
       router.replace("/(tabs)");

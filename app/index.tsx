@@ -1,12 +1,49 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Camera, ChevronRight, LayoutDashboard } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
+import { useGetEventbyCode } from "@/src/hooks/Event";
 
 export default function Index() {
   const inset = useSafeAreaInsets();
   const router = useRouter();
+  const [eventCode, setEventCode] = React.useState("");
+
+  // Pass enabled: false so it doesn't try to query on every keystroke
+  const { isFetching, refetch } = useGetEventbyCode(eventCode);
+
+  const handleJoinEvent = async () => {
+    if (!eventCode.trim()) {
+      Alert.alert("Required", "Please enter an event code.");
+      return;
+    }
+
+    try {
+      const { data: fetchedData } = await refetch();
+
+      if (fetchedData) {
+        // Encode the data safely so special characters or spaces don't break the URL
+        const encodedData = encodeURIComponent(JSON.stringify(fetchedData));
+
+        // Pass everything as a single string template literal cast as an Href
+        router.push(
+          `/${fetchedData.eventCode}?code=${eventCode}&eventData=${encodedData}` as Href,
+        );
+      } else {
+        Alert.alert("Invalid Code", "Invalid event code. Please try again.");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Something went wrong fetching the event.");
+    }
+  };
 
   return (
     <View
@@ -46,14 +83,25 @@ export default function Index() {
           placeholderTextColor={"#6366f1"}
           className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-primary"
           autoCapitalize="characters"
+          value={eventCode}
+          onChangeText={setEventCode}
+          editable={!isFetching}
         />
 
         <TouchableOpacity
           activeOpacity={0.8}
           className="w-full bg-indigo-500 py-5 rounded-2xl flex-row justify-center items-center gap-x-2"
+          onPress={handleJoinEvent}
+          disabled={isFetching}
         >
-          <Text className="text-white font-bold text-lg">Join Event</Text>
-          <ChevronRight size={20} color="white" />
+          {isFetching ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <Text className="text-white font-bold text-lg">Join Event</Text>
+              <ChevronRight size={20} color="white" />
+            </>
+          )}
         </TouchableOpacity>
       </View>
 

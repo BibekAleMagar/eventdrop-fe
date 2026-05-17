@@ -50,11 +50,13 @@ export default function CreateEvent() {
     }
   }, [isAuthenticated]);
 
-  const { control, handleSubmit, watch, setValue } = useForm<
-    CreateEventOutput,
-    any,
-    CreateEventOutput
-  >({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CreateEventOutput, any, CreateEventOutput>({
     defaultValues: {
       name: "",
       description: "",
@@ -87,7 +89,7 @@ export default function CreateEvent() {
             setValue("startingDate", selectedDate, { shouldValidate: true });
           }
         },
-        // mode: "datetime",
+        mode: "time",
         is24Hour: true,
         minimumDate: new Date(),
       });
@@ -107,7 +109,7 @@ export default function CreateEvent() {
             setValue("endingDate", selectedDate, { shouldValidate: true });
           }
         },
-        // mode: "datetime",
+        mode: "time",
         is24Hour: true,
         minimumDate: new Date(),
       });
@@ -155,6 +157,11 @@ export default function CreateEvent() {
               />
             )}
           />
+          {errors.name && (
+            <Text className="text-red-500 text-sm mt-2">
+              {errors.name.message}
+            </Text>
+          )}
         </View>
 
         <View className="mb-6">
@@ -177,6 +184,11 @@ export default function CreateEvent() {
               />
             )}
           />
+          {errors.description && (
+            <Text className="text-red-500 text-sm mt-2">
+              {errors.description.message}
+            </Text>
+          )}
         </View>
 
         <View className="mb-6">
@@ -204,6 +216,11 @@ export default function CreateEvent() {
               minimumDate={new Date()}
             />
           )}
+          {errors.startingDate && (
+            <Text className="text-red-500 text-sm mt-2">
+              {errors.startingDate.message}
+            </Text>
+          )}
         </View>
 
         <View className="mb-6">
@@ -228,6 +245,11 @@ export default function CreateEvent() {
               onChange={handleIOSEndDateChange}
               minimumDate={new Date()}
             />
+          )}
+          {errors.endingDate && (
+            <Text className="text-red-500 text-sm mt-2">
+              {errors.endingDate.message}
+            </Text>
           )}
         </View>
 

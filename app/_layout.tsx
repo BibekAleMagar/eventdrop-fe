@@ -12,11 +12,11 @@ export default function RootLayout() {
   useEffect(() => {
     const checkFirstLaunch = async () => {
       try {
-        if (__DEV__) {
-          await AsyncStorage.clear();
-          setIsFirstLaunch(true);
-          return;
-        }
+        // if (__DEV__) {
+        //   await AsyncStorage.clear();
+        //   setIsFirstLaunch(true);
+        //   return;
+        // }
 
         const hasLaunched = await AsyncStorage.getItem("hasLaunched");
         if (hasLaunched === null) {

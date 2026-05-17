@@ -9,3 +9,7 @@ export const useCreateEvent = () => {
 export const useMyEvents = () => {
   return useFetch<Event[]>(["myEvents"], "/events/my-events");
 };
+
+export const useGetEventbyCode = (code: string) => {
+  return useFetch<Event>(["event", code], `/events?code=${code}`);
+};
