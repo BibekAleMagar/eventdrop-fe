@@ -22,7 +22,21 @@ apiClient.interceptors.response.use(
   },
 
   (error) => {
-    const message = error.response.data.message || "Something went wrong";
+    // No response = network-level failure (wrong IP, no internet, timeout)
+    if (!error.response) {
+      console.log("❌ Network Error:", error.message);
+      console.log(
+        "❌ Tried to reach:",
+        error.config?.baseURL,
+        error.config?.url,
+      );
+      return Promise.reject("Network error - check your API URL or connection");
+    }
+
+    console.log("❌ Status:", error.response.status);
+    console.log("❌ Body:", JSON.stringify(error.response.data, null, 2));
+
+    const message = error.response.data?.message || "Something went wrong";
 
     if (error.response.status === 401) {
       AsyncStorage.removeItem("access_token");

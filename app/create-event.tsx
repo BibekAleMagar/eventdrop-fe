@@ -33,7 +33,6 @@ export default function CreateEvent() {
 
   useEffect(() => {
     return () => {
-      // Clean up on unmount
       if (Platform.OS === "android" && pickerOpenRef.current) {
         try {
           DateTimePickerAndroid.dismiss("date");
@@ -70,7 +69,6 @@ export default function CreateEvent() {
   const endDate = watch("endingDate");
 
   const handleCreateEvent = async (data: create) => {
-    console.log(data);
     try {
       await mutateAsync(data);
       router.replace("/(tabs)");
@@ -86,11 +84,23 @@ export default function CreateEvent() {
         onChange: (event, selectedDate) => {
           pickerOpenRef.current = false;
           if (event.type === "set" && selectedDate) {
-            setValue("startingDate", selectedDate, { shouldValidate: true });
+            DateTimePickerAndroid.open({
+              value: selectedDate,
+              onChange: (timeEvent, selectedTime) => {
+                if (timeEvent.type === "set" && selectedTime) {
+                  // Combine date + time into one Date object
+                  const combined = new Date(selectedDate);
+                  combined.setHours(selectedTime.getHours());
+                  combined.setMinutes(selectedTime.getMinutes());
+                  setValue("startingDate", combined, { shouldValidate: true });
+                }
+              },
+              mode: "time",
+              is24Hour: true,
+            });
           }
         },
-        mode: "time",
-        is24Hour: true,
+        mode: "date",
         minimumDate: new Date(),
       });
       pickerOpenRef.current = true;
@@ -106,11 +116,23 @@ export default function CreateEvent() {
         onChange: (event, selectedDate) => {
           pickerOpenRef.current = false;
           if (event.type === "set" && selectedDate) {
-            setValue("endingDate", selectedDate, { shouldValidate: true });
+            DateTimePickerAndroid.open({
+              value: selectedDate,
+              onChange: (timeEvent, selectedTime) => {
+                if (timeEvent.type === "set" && selectedTime) {
+                  // Combine date + time into one Date object
+                  const combined = new Date(selectedDate);
+                  combined.setHours(selectedTime.getHours());
+                  combined.setMinutes(selectedTime.getMinutes());
+                  setValue("endingDate", combined, { shouldValidate: true });
+                }
+              },
+              mode: "time",
+              is24Hour: true,
+            });
           }
         },
-        mode: "time",
-        is24Hour: true,
+        mode: "date",
         minimumDate: new Date(),
       });
       pickerOpenRef.current = true;
@@ -258,10 +280,7 @@ export default function CreateEvent() {
           disabled={isPending}
           className="bg-midnight h-16 rounded-[24px] items-center justify-center mt-6 shadow-lg shadow-midnight/20 mb-8"
         >
-          <Text
-            className="text-white font-semibold text-lg"
-            disabled={isPending}
-          >
+          <Text className="text-white font-semibold text-lg">
             {isPending ? "Creating..." : "Launch Event"}
           </Text>
         </TouchableOpacity>

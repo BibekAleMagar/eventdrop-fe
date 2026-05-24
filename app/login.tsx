@@ -42,7 +42,7 @@ export default function LoginScreen() {
     try {
       // 💡 1. Force clear everything cached by the Google SDK on the phone
       try {
-        await GoogleSignin.revokeAccess(); // 👈 This forces Google to forget this device's session
+        // await GoogleSignin.revokeAccess(); // 👈 This forces Google to forget this device's session
         await GoogleSignin.signOut();
       } catch (e) {
         // Ignore errors if the user wasn't signed in yet

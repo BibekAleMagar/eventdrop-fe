@@ -6,13 +6,14 @@ import {
 } from "@tanstack/react-query";
 import { apiClient } from "./apiClient";
 
-export const useFetch = <T,>(key: QueryKey, url: string) => {
+export const useFetch = <T,>(key: QueryKey, url: string, enabled?: boolean) => {
   return useQuery<T, string>({
     queryKey: key,
     queryFn: async () => {
       const response = await apiClient.get(url);
       return response.data;
     },
+    enabled: enabled !== false,
   });
 };
 
