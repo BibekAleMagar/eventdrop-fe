@@ -7,7 +7,6 @@ export default function PublicEventScreen() {
     eventData: string;
   }>();
 
-  // Turn the string back into a real JavaScript object/JSON
   const event = eventData ? JSON.parse(eventData) : null;
 
   if (!event) {
@@ -19,7 +18,6 @@ export default function PublicEventScreen() {
       <Text style={{ fontSize: 24, fontWeight: "bold" }}>{event.name}</Text>
       <Text>Code: {code}</Text>
       <Text>Location: {event.location}</Text>
-      {/* You can now map through photos or any other data returned from your server */}
     </View>
   );
 }

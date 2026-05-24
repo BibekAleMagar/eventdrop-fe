@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, Image } from "react-native";
 import { X } from "lucide-react-native";
+import { QrCode } from "lucide-react-native";
 
 interface QrCodeModalProps {
   isVisible: boolean;
@@ -18,19 +19,19 @@ export default function QrCodeModal({
   if (!qrCodeUrl) return null;
 
   // 🛠️ Translates standard Google Drive web page viewer links into raw image source URLs
-  const getDirectImageUrl = (url: string) => {
-    if (url.includes("drive.google.com")) {
-      const match = url.match(/\/file\/d\/([^\/]+)/);
-      if (match && match[1]) {
-        const fileId = match[1];
-        // 🔑 Bypass Google's webpage structure and request the raw binary data directly
-        return `https://lh3.googleusercontent.com/d/${fileId}`;
-      }
-    }
-    return url;
-  };
+  // const getDirectImageUrl = (url: string) => {
+  //   if (url.includes("drive.google.com")) {
+  //     const match = url.match(/\/file\/d\/([^\/]+)/);
+  //     if (match && match[1]) {
+  //       const fileId = match[1];
+  //       // 🔑 Bypass Google's webpage structure and request the raw binary data directly
+  //       return `https://lh3.googleusercontent.com/d/${fileId}`;
+  //     }
+  //   }
+  //   return url;
+  // };
 
-  const directUrl = getDirectImageUrl(qrCodeUrl);
+  // const directUrl = getDirectImageUrl(qrCodeUrl);
 
   return (
     <Modal
@@ -66,21 +67,7 @@ export default function QrCodeModal({
 
           {/* QR Code Frame Wrapper */}
           <View className="bg-slate-50 border border-slate-100 p-4 rounded-[24px] items-center justify-center mb-6 shadow-inner">
-            <Image
-              source={{ uri: directUrl }} // 🔑 Uses the translated direct download CDN link
-              style={{ width: 180, height: 180 }}
-              resizeMode="contain"
-              onError={(e) =>
-                console.log(
-                  "❌ QR Image Load Error Details:",
-                  e.nativeEvent.error,
-                )
-              }
-              onLoadStart={() =>
-                console.log("🚀 Requesting raw content asset from:", directUrl)
-              }
-              onLoad={() => console.log("✅ QR Code rendered perfectly!")}
-            />
+            <QrCode size={180} color="#64748b" />
           </View>
 
           {/* Optional Footer Action */}

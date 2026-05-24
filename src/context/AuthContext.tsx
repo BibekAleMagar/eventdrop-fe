@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  console.log(user);
 
   useEffect(() => {
     const loadAuthState = async () => {
@@ -28,7 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const token = storedToken[1];
         const user = storedUser[1];
-
         if (token && user) {
           setToken(token);
           setUser(JSON.parse(user));

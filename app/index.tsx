@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,19 +6,54 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Camera, ChevronRight, LayoutDashboard } from "lucide-react-native";
+import {
+  Camera,
+  ChevronRight,
+  LayoutDashboard,
+  Scan,
+  X,
+} from "lucide-react-native";
 import { Href, useRouter } from "expo-router";
 import { useGetEventbyCode } from "@/src/hooks/Event";
+import QrScan from "@/src/components/QRScanner";
+import { apiClient } from "@/src/api/apiClient";
+import { Event } from "@/src/types/Event";
 
 export default function Index() {
   const inset = useSafeAreaInsets();
   const router = useRouter();
   const [eventCode, setEventCode] = React.useState("");
+  const [showScanner, setShowScanner] = useState(false);
 
-  // Pass enabled: false so it doesn't try to query on every keystroke
-  const { isFetching, refetch } = useGetEventbyCode(eventCode);
+  // Get hook for fetching event by code
+  const getEventbyCodeHook = useGetEventbyCode(eventCode, false);
+  const { isFetching, refetch } = getEventbyCodeHook;
+
+  const handleQRScanned = async (data: string) => {
+    try {
+      // Close scanner immediately
+      setShowScanner(false);
+
+      const response = await apiClient.get<Event>(`/events?code=${data}`);
+
+      if (response) {
+        // Encode the data safely
+        const encodedData = encodeURIComponent(JSON.stringify(response));
+
+        // Navigate to event page
+        router.push(
+          `/${response.data.eventCode}?code=${data}&eventData=${encodedData}` as Href,
+        );
+      } else {
+        Alert.alert("Invalid Code", "Event not found. Please try again.");
+      }
+    } catch {
+      Alert.alert("Error", "Failed to fetch event. Please try again.");
+    }
+  };
 
   const handleJoinEvent = async () => {
     if (!eventCode.trim()) {
@@ -40,7 +75,7 @@ export default function Index() {
       } else {
         Alert.alert("Invalid Code", "Invalid event code. Please try again.");
       }
-    } catch (err) {
+    } catch {
       Alert.alert("Error", "Something went wrong fetching the event.");
     }
   };
@@ -72,21 +107,24 @@ export default function Index() {
         </Text>
 
         <Text className="text-slate-400 text-center text-lg leading-6 px-4">
-          Upload event photos directly to the host's Drive. No account needed.
+          Upload event photos directly to the host&apos;s Drive. No account
+          needed.
         </Text>
       </View>
 
       {/* Input Section */}
       <View className="w-full gap-y-4 mb-10">
-        <TextInput
-          placeholder="Enter Event Code"
-          placeholderTextColor={"#6366f1"}
-          className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-primary"
-          autoCapitalize="characters"
-          value={eventCode}
-          onChangeText={setEventCode}
-          editable={!isFetching}
-        />
+        <View className="relative">
+          <TextInput
+            placeholder="Enter Event Code"
+            placeholderTextColor={"#6366f1"}
+            className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-primary"
+            autoCapitalize="characters"
+            value={eventCode}
+            onChangeText={setEventCode}
+            editable={!isFetching}
+          />
+        </View>
 
         <TouchableOpacity
           activeOpacity={0.8}
@@ -114,6 +152,8 @@ export default function Index() {
         <View className="flex-1 h-[1px] bg-slate-800" />
       </View>
 
+      {/* <QrScan onScan={handleQRScanned} /> */}
+
       {/* Dashboard Button */}
       <TouchableOpacity
         onPress={() => router.push("/login")}
@@ -125,6 +165,36 @@ export default function Index() {
           Go to Dashboard
         </Text>
       </TouchableOpacity>
+
+      {/* QR Scanner Modal */}
+      {/* <Modal
+        visible={showScanner}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View className="flex-1 bg-slate-900">
+          <View
+            className="flex-row items-center justify-between px-6 pt-4"
+            style={{ paddingTop: inset.top + 16 }}
+          >
+            <Text className="text-white text-lg font-semibold">
+              Scan Event Code
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowScanner(false)}
+              className="bg-slate-800 p-2 rounded-full"
+              activeOpacity={0.7}
+            >
+              <X size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-1 mt-4">
+            <QrScan onScan={handleQRScanned} />
+          </View>
+        </View>
+      </Modal> */}
     </View>
   );
 }

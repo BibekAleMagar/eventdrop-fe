@@ -58,6 +58,7 @@ export default function Dashboard() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data, isLoading, error } = useMyEvents();
+  console.log("Fetched Events:", data); // Debug log to verify fetched events
 
   const events: Event[] = data ?? [];
 
