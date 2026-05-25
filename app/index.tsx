@@ -18,44 +18,17 @@ import {
 } from "lucide-react-native";
 import { Href, useRouter } from "expo-router";
 import { useGetEventbyCode } from "@/src/hooks/Event";
-import QrScan from "@/src/components/QRScanner";
-import { apiClient } from "@/src/api/apiClient";
-import { Event } from "@/src/types/Event";
 
 export default function Index() {
   const inset = useSafeAreaInsets();
   const router = useRouter();
   const [eventCode, setEventCode] = React.useState("");
-  const [showScanner, setShowScanner] = useState(false);
 
   // Get hook for fetching event by code
   const getEventbyCodeHook = useGetEventbyCode(eventCode, false);
   const { isFetching, refetch } = getEventbyCodeHook;
 
-  const handleQRScanned = async (data: string) => {
-    try {
-      // Close scanner immediately
-      setShowScanner(false);
-
-      const response = await apiClient.get<Event>(`/events?code=${data}`);
-
-      if (response) {
-        // Encode the data safely
-        const encodedData = encodeURIComponent(JSON.stringify(response));
-
-        // Navigate to event page
-        router.push(
-          `/${response.data.eventCode}?code=${data}&eventData=${encodedData}` as Href,
-        );
-      } else {
-        Alert.alert("Invalid Code", "Event not found. Please try again.");
-      }
-    } catch {
-      Alert.alert("Error", "Failed to fetch event. Please try again.");
-    }
-  };
-
-  const handleJoinEvent = async () => {
+  const handleJoinEvent: () => Promise<void> = async () => {
     if (!eventCode.trim()) {
       Alert.alert("Required", "Please enter an event code.");
       return;
@@ -72,6 +45,7 @@ export default function Index() {
         router.push(
           `/${fetchedData.eventCode}?code=${eventCode}&eventData=${encodedData}` as Href,
         );
+        setEventCode("");
       } else {
         Alert.alert("Invalid Code", "Invalid event code. Please try again.");
       }
@@ -118,7 +92,7 @@ export default function Index() {
           <TextInput
             placeholder="Enter Event Code"
             placeholderTextColor={"#6366f1"}
-            className="w-full py-5 px-6 rounded-2xl font-semibold text-center tracking-widest border border-primary"
+            className="w-full py-5 px-6 rounded-2xl font-semibold tracking-widest border border-primary text-center"
             autoCapitalize="characters"
             value={eventCode}
             onChangeText={setEventCode}
@@ -152,8 +126,6 @@ export default function Index() {
         <View className="flex-1 h-[1px] bg-slate-800" />
       </View>
 
-      {/* <QrScan onScan={handleQRScanned} /> */}
-
       {/* Dashboard Button */}
       <TouchableOpacity
         onPress={() => router.push("/login")}
@@ -165,36 +137,6 @@ export default function Index() {
           Go to Dashboard
         </Text>
       </TouchableOpacity>
-
-      {/* QR Scanner Modal */}
-      {/* <Modal
-        visible={showScanner}
-        animationType="slide"
-        presentationStyle="fullScreen"
-        onRequestClose={() => setShowScanner(false)}
-      >
-        <View className="flex-1 bg-slate-900">
-          <View
-            className="flex-row items-center justify-between px-6 pt-4"
-            style={{ paddingTop: inset.top + 16 }}
-          >
-            <Text className="text-white text-lg font-semibold">
-              Scan Event Code
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowScanner(false)}
-              className="bg-slate-800 p-2 rounded-full"
-              activeOpacity={0.7}
-            >
-              <X size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-1 mt-4">
-            <QrScan onScan={handleQRScanned} />
-          </View>
-        </View>
-      </Modal> */}
     </View>
   );
 }

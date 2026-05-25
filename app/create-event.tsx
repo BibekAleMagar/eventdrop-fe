@@ -55,7 +55,7 @@ export default function CreateEvent() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<CreateEventOutput, any, CreateEventOutput>({
+  } = useForm<CreateEventOutput, CreateEventOutput>({
     defaultValues: {
       name: "",
       description: "",
@@ -72,7 +72,7 @@ export default function CreateEvent() {
     try {
       await mutateAsync(data);
       router.replace("/(tabs)");
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     }
   };
