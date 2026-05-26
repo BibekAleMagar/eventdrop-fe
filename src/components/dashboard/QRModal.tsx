@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, Image } from "react-native";
 import { X } from "lucide-react-native";
-import { QrCode } from "lucide-react-native";
+import QRCode from "react-native-qrcode-svg";
 
 interface QrCodeModalProps {
   isVisible: boolean;
@@ -67,7 +67,7 @@ export default function QrCodeModal({
 
           {/* QR Code Frame Wrapper */}
           <View className="bg-slate-50 border border-slate-100 p-4 rounded-[24px] items-center justify-center mb-6 shadow-inner">
-            <QrCode size={180} color="#64748b" />
+            <QRCode value={qrCodeUrl} size={180} color="#64748b" />
           </View>
 
           {/* Optional Footer Action */}
