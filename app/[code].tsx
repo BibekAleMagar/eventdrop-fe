@@ -163,7 +163,7 @@ export default function PublicEventScreen() {
 
   // ── Main Screen ──────────────────────────────────────────────────────────────
   return (
-    <View className="flex-1 bg-slate-100">
+    <View className="flex-1 bg-primary">
       <StatusBar barStyle="light-content" />
 
       {/* Hero Header */}
