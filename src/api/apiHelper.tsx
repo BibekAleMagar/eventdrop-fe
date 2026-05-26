@@ -32,6 +32,45 @@ export const useCreate = <TVariables, TResponse>(
   });
 };
 
+export const useCreateFormData = <
+  TVariables extends Record<
+    string,
+    string | { uri: string; name: string; type: string }
+  >,
+  TResponse,
+>(
+  url: string,
+  queryKeyToInvalidate?: QueryKey,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation<TResponse, string, TVariables>({
+    mutationFn: async (data) => {
+      const formData = new FormData();
+
+      for (const [key, value] of Object.entries(data)) {
+        formData.append(key, value as any);
+      }
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/${url}`,
+        {
+          // 🔁 replace BASE_URL with your apiClient's base URL
+          method: "POST",
+          headers: { "Content-Type": "multipart/form-data" },
+          body: formData,
+        },
+      );
+
+      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      if (queryKeyToInvalidate) {
+        queryClient.invalidateQueries({ queryKey: queryKeyToInvalidate });
+      }
+    },
+  });
+};
 export const useUpdate = <TVariables, TResponse>(
   url: string,
   queryKeyToInvalidate?: QueryKey,

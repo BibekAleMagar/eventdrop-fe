@@ -8,11 +8,14 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
+  Image,
 } from "react-native";
 import { Event } from "@/src/types/Event";
 import { CameraView, Camera } from "expo-camera";
 import { useState, useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useUploadPhoto } from "@/src/hooks/Upload";
+import { set } from "zod";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -28,7 +31,10 @@ export default function PublicEventScreen() {
   );
   const [showCamera, setShowCamera] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [uploaded, setUploaded] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+
+  const { mutateAsync: uploadPhoto, isPending: isUploading } = useUploadPhoto();
 
   const event: Event = eventData ? JSON.parse(eventData) : null;
 
@@ -55,11 +61,38 @@ export default function PublicEventScreen() {
     if (!cameraRef.current) return;
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-      setCapturedPhoto(photo?.uri ?? null);
+      if (!photo?.uri) return;
+      setCapturedPhoto(photo.uri);
+      setUploaded(false); // reset upload state on new capture
       setShowCamera(false);
     } catch {
       Alert.alert("Error", "Failed to capture photo. Please try again.");
     }
+  };
+
+  const handleUpload = async () => {
+    if (!capturedPhoto) return;
+    try {
+      await uploadPhoto({
+        eventCode: code,
+        photo: {
+          uri: capturedPhoto,
+          name: "event_photo.jpg",
+          type: "image/jpeg",
+        },
+      });
+      setUploaded(true);
+      setCapturedPhoto(null); // Clear the photo after successful upload
+      Alert.alert("Success", "Photo uploaded successfully!");
+    } catch {
+      Alert.alert("Error", "Upload failed. Please try again.");
+    }
+  };
+
+  const handleRetake = () => {
+    setCapturedPhoto(null);
+    setUploaded(false);
+    setShowCamera(true);
   };
 
   const formatDate = (dateString?: string | null) => {
@@ -77,13 +110,8 @@ export default function PublicEventScreen() {
     return (
       <View style={styles.cameraContainer}>
         <StatusBar barStyle="light-content" />
-
-        {/* Explicit pixel dimensions fix the black screen */}
         <CameraView ref={cameraRef} facing="back" style={styles.camera} />
-
-        {/* Overlay — sibling, not child */}
         <View style={StyleSheet.absoluteFill}>
-          {/* Top Bar */}
           <View
             style={{ paddingTop: insets.top + 8 }}
             className="flex-row items-center justify-between px-5"
@@ -94,17 +122,13 @@ export default function PublicEventScreen() {
             >
               <Text className="text-white text-lg font-bold">✕</Text>
             </TouchableOpacity>
-
             <View className="bg-black/50 rounded-full px-4 py-1.5">
               <Text className="text-white text-xs font-semibold tracking-widest uppercase">
                 {event?.name ?? "Event"}
               </Text>
             </View>
-
             <View className="w-10" />
           </View>
-
-          {/* Shutter */}
           <View
             className="absolute left-0 right-0 items-center"
             style={{ bottom: insets.bottom + 24 }}
@@ -161,23 +185,83 @@ export default function PublicEventScreen() {
         <View className="mt-5 h-px bg-violet-500/20" />
       </View>
 
-      {/* Details Card */}
       <ScrollView
         className="flex-1"
         contentContainerClassName="p-5"
         showsVerticalScrollIndicator={false}
       >
-        {capturedPhoto && (
+        {/* ── Photo Preview Card ── */}
+        {capturedPhoto ? (
+          <View className="mb-4 rounded-2xl overflow-hidden bg-white shadow-sm shadow-violet-200">
+            {/* Badge */}
+            <View className="flex-row items-center px-4 pt-4 pb-2">
+              <View
+                className={`flex-row items-center rounded-full px-3 py-1 ${uploaded ? "bg-emerald-100" : "bg-violet-100"}`}
+              >
+                <Text className="text-base mr-1">{uploaded ? "✅" : "📸"}</Text>
+                <Text
+                  className={`text-xs font-bold tracking-wide ${uploaded ? "text-emerald-600" : "text-violet-600"}`}
+                >
+                  {uploaded ? "Uploaded" : "Photo Ready"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Photo */}
+            <Image
+              source={{ uri: capturedPhoto }}
+              className="w-full"
+              style={{ height: 220 }}
+              resizeMode="cover"
+            />
+
+            {/* Retake / Upload buttons */}
+            <View className="flex-row gap-3 p-4">
+              <TouchableOpacity
+                onPress={handleRetake}
+                disabled={isUploading}
+                className="flex-1 h-11 rounded-xl border border-violet-300 items-center justify-center"
+              >
+                <Text className="text-violet-600 text-sm font-bold">
+                  🔄 Retake
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleUpload}
+                disabled={isUploading || uploaded}
+                className={`flex-1 h-11 rounded-xl items-center justify-center ${
+                  uploaded
+                    ? "bg-emerald-500"
+                    : isUploading
+                      ? "bg-violet-400"
+                      : "bg-violet-600"
+                }`}
+              >
+                <Text className="text-white text-sm font-bold">
+                  {uploaded
+                    ? "✓ Done"
+                    : isUploading
+                      ? "Uploading..."
+                      : "⬆️ Upload"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          /* ── Placeholder when no photo yet ── */
           <TouchableOpacity
-            onPress={() => setShowCamera(true)}
-            className="mb-4 rounded-2xl overflow-hidden h-48 bg-slate-800 items-center justify-center border-2 border-violet-400"
+            onPress={handleCameraPress}
+            className="mb-4 rounded-2xl h-36 bg-white border-2 border-dashed border-violet-300 items-center justify-center shadow-sm shadow-violet-100"
           >
-            <Text className="text-white text-sm font-semibold">
-              📸 Photo captured — tap to retake
+            <Text className="text-4xl mb-2">📷</Text>
+            <Text className="text-violet-500 text-sm font-semibold">
+              Tap to take a photo
             </Text>
           </TouchableOpacity>
         )}
 
+        {/* Details Card */}
         <View className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-violet-200">
           <View className="flex-row items-center gap-3 px-5 py-4">
             <Text className="text-2xl w-8 text-center">📅</Text>
@@ -237,33 +321,29 @@ export default function PublicEventScreen() {
         <View className="h-28" />
       </ScrollView>
 
-      {/* Floating Camera Button */}
-      <View
-        className="absolute self-center items-center"
-        style={{ bottom: insets.bottom + 24 }}
-      >
-        <TouchableOpacity
-          onPress={handleCameraPress}
-          activeOpacity={0.85}
-          className="w-16 h-16 rounded-full bg-violet-600 items-center justify-center shadow-lg shadow-violet-500"
+      {/* Floating Camera Button — hidden when photo is captured */}
+      {!capturedPhoto && (
+        <View
+          className="absolute self-center items-center"
+          style={{ bottom: insets.bottom + 24 }}
         >
-          <Text className="text-3xl">{capturedPhoto ? "🔄" : "📷"}</Text>
-        </TouchableOpacity>
-        <Text className="text-violet-600 text-xs font-bold tracking-wide mt-1.5">
-          {capturedPhoto ? "Retake Photo" : "Open Camera"}
-        </Text>
-      </View>
+          <TouchableOpacity
+            onPress={handleCameraPress}
+            activeOpacity={0.85}
+            className="w-16 h-16 rounded-full bg-violet-600 items-center justify-center shadow-lg shadow-violet-500"
+          >
+            <Text className="text-3xl">📷</Text>
+          </TouchableOpacity>
+          <Text className="text-violet-600 text-xs font-bold tracking-wide mt-1.5">
+            Open Camera
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cameraContainer: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  camera: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-  },
+  cameraContainer: { flex: 1, backgroundColor: "#000" },
+  camera: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
 });
