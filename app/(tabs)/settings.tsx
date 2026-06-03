@@ -17,8 +17,8 @@ export default function Settings() {
   const insets = useSafeAreaInsets();
   const { data, isLoading, isError } = useDashboard();
 
-  const handleLogOut = () => {
-    logout();
+  const handleLogOut = async () => {
+    await logout();
     router.replace("/login");
   };
 

@@ -7,6 +7,7 @@ import {
 } from "react";
 import { AuthContextType } from "../types/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { User } from "../types/User";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -60,6 +61,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
+      try {
+        await GoogleSignin.signOut();
+      } catch {
+        // Ignore errors if there is no active Google session.
+      }
+
       await AsyncStorage.multiRemove(["access_token", "auth_user"]);
     } catch (error) {
       console.error("Failed to clear auth state:", error);
