@@ -53,13 +53,6 @@ export default function DashboardLayout() {
         }}
       />
       <Tabs.Screen
-        name="qr-page"
-        options={{
-          tabBarIcon: ({ color }) => <QrCode size={24} color={color} />,
-          tabBarLabel: "Quick QR",
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           tabBarIcon: ({ color }) => <Settings size={24} color={color} />,

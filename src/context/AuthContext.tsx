@@ -9,10 +9,12 @@ import { AuthContextType } from "../types/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { User } from "../types/User";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -68,6 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       await AsyncStorage.multiRemove(["access_token", "auth_user"]);
+      queryClient.clear();
     } catch (error) {
       console.error("Failed to clear auth state:", error);
     } finally {
