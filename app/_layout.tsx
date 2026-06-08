@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
 import { QueryProvider } from "@/src/context/QueryClient";
 import { AuthProvider } from "@/src/context/AuthContext";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
@@ -65,6 +66,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
+        <Toast />
       </AuthProvider>
     </QueryProvider>
   );

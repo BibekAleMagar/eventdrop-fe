@@ -331,11 +331,11 @@ export default function PublicEventScreen() {
           <TouchableOpacity
             onPress={handleCameraPress}
             activeOpacity={0.85}
-            className="w-16 h-16 rounded-full bg-indigo-500 items-center justify-center"
+            className="w-16 h-16 rounded-full items-center justify-center border border-indigo-500 shadow-lg"
           >
             <Text className="text-3xl">📷</Text>
           </TouchableOpacity>
-          <Text className="text-indigo-500 text-xs font-bold tracking-wide mt-1.5">
+          <Text className="text-indigo-500 text-xs font-bold tracking-wide">
             Open Camera
           </Text>
         </View>

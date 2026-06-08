@@ -10,11 +10,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { User } from "../types/User";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -65,19 +67,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       try {
         await GoogleSignin.signOut();
-      } catch {
-        // Ignore errors if there is no active Google session.
-      }
+      } catch {}
 
       await AsyncStorage.multiRemove(["access_token", "auth_user"]);
       queryClient.clear();
     } catch (error) {
       console.error("Failed to clear auth state:", error);
     } finally {
-      // Always clear in-memory state even if storage fails
       setToken(null);
       setUser(null);
       setIsAuthenticated(false);
+      router.replace("/index");
     }
   }, []);
 

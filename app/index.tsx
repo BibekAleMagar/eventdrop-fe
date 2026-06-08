@@ -47,11 +47,8 @@ export default function Index() {
         );
         setEventCode("");
       } else {
-        Alert.alert("Invalid Code", "Invalid event code. Please try again.");
       }
-    } catch {
-      Alert.alert("Error", "Something went wrong fetching the event.");
-    }
+    } catch {}
   };
 
   return (
